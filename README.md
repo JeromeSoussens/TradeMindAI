@@ -1,18 +1,26 @@
-# TradeMind AI 📈
+<div align="center">
+  <img src="logo.svg" alt="TradeMind AI Logo" width="120" />
+  <h1>TradeMind AI</h1>
+  <p>
+    <strong>An intelligent trading dashboard that empowers retail investors to track their portfolio and receive real-time, AI-driven investment advice.</strong>
+  </p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
+    <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-blue" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/AI-Gemini%202.5-orange" alt="Gemini AI" />
+  </p>
+</div>
 
-TradeMind AI is an intelligent trading dashboard that empowers retail investors to track their portfolio and receive real-time, AI-driven investment advice.
+<br />
 
-Built with **React**, **TypeScript**, and **Google Gemini AI**, it combines real-time market data with advanced large language model analysis to suggest **Buy**, **Sell**, or **Hold** actions based on your specific entry points and market conditions.
-
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![React](https://img.shields.io/badge/React-19-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Gemini AI](https://img.shields.io/badge/AI-Gemini%202.5-orange)
+TradeMind AI combines real-time market data with advanced large language model analysis to suggest **Buy**, **Sell**, or **Hold** actions based on your specific entry points and market conditions.
 
 ## ✨ Key Features
 
 - **🤖 AI Investment Advice**: Uses Google Gemini 2.5 Flash to analyze your positions and provide actionable "Buy", "Sell", or "Hold" recommendations with confidence scores.
-- **📊 Interactive Charts**: visualize stock performance with historical price data, including **SMA50** and **SMA200** technical indicators.
+- **📊 Interactive Charts**: Visualize stock performance with historical price data, including **SMA50** and **SMA200** technical indicators.
 - **💰 Portfolio Tracking**: Real-time calculation of daily P/L, total P/L, and portfolio allocation by sector.
 - **📝 Transaction History**: Log Buy and Sell transactions to automatically adjust your average buy price and realized gains.
 - **📡 Real-Time Market Data**: Integrated with **Finnhub API** for live quotes and company profiles (includes a robust fallback mode for demo purposes).
