@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Logo } from './Logo';
 
 export const LoginPage: React.FC = () => {
   const { signInWithGoogle } = useAuth();
@@ -22,8 +23,8 @@ export const LoginPage: React.FC = () => {
 
       <div className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in duration-500">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4">
-            <LayoutDashboard size={32} className="text-white" />
+          <div className="mb-6 scale-110">
+            <Logo size={64} />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">TradeMind AI</h1>
           <p className="text-slate-400 text-center text-sm">

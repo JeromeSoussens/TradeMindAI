@@ -7,11 +7,12 @@ import { StockDetail } from './components/StockDetail';
 import { AddStockModal } from './components/AddStockModal';
 import { LoginPage } from './components/LoginPage';
 import { UserMenu } from './components/UserMenu';
+import { Logo } from './components/Logo';
 import { analyzeStockPosition } from './services/geminiService';
 import { storageService } from './services/storageService';
 import { marketDataService } from './services/marketDataService';
 import { useAuth } from './contexts/AuthContext';
-import { LayoutDashboard, Plus, RefreshCw, Loader2 } from 'lucide-react';
+import { Plus, RefreshCw, Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -162,10 +163,8 @@ const App: React.FC = () => {
       
       {/* Header - Z-Index increased to 40 to sit above Detail Panel (z-30) */}
       <header className="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="flex items-center gap-3 text-blue-500">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-            <LayoutDashboard size={20} />
-          </div>
+        <div className="flex items-center gap-3">
+          <Logo size={32} />
           <span className="font-bold text-lg tracking-tight text-white hidden sm:block">TradeMind</span>
         </div>
 
