@@ -1,0 +1,5 @@
+{
+  "name": "TradeMind AI",
+  "description": "An intelligent trading dashboard that tracks your portfolio and uses Gemini AI to provide real-time Buy/Sell/Hold recommendations based on market performance.",
+  "requestFramePermissions": []
+}
