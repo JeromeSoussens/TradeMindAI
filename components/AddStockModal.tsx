@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { X, Check, Search, Loader2 } from 'lucide-react';
-import { lookupStockSymbol } from '../services/geminiService';
+import { marketDataService } from '../services/marketDataService';
 
 interface AddStockData {
   symbol: string;
@@ -27,6 +28,7 @@ export const AddStockModal: React.FC<AddStockModalProps> = ({ isOpen, onClose, o
     sector: 'Technology'
   });
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
@@ -42,17 +44,25 @@ export const AddStockModal: React.FC<AddStockModalProps> = ({ isOpen, onClose, o
 
   const handleLookup = async () => {
     if (!formData.symbol) return;
-    
+    setError('');
     setIsLookingUp(true);
-    const data = await lookupStockSymbol(formData.symbol);
+
+    // Parallel fetch for profile and quote
+    const [profile, quote] = await Promise.all([
+      marketDataService.getProfile(formData.symbol),
+      marketDataService.getQuote(formData.symbol)
+    ]);
     
-    if (data) {
+    if (profile && quote) {
       setFormData(prev => ({
         ...prev,
-        name: data.name,
-        currentPrice: data.price,
-        sector: data.sector
+        name: profile.name,
+        currentPrice: quote.c,
+        buyPrice: quote.c, // Default buy price to current price for convenience
+        sector: profile.finnhubIndustry || 'Technology'
       }));
+    } else {
+      setError('Symbol not found or data unavailable');
     }
     setIsLookingUp(false);
   };
@@ -69,6 +79,7 @@ export const AddStockModal: React.FC<AddStockModalProps> = ({ isOpen, onClose, o
       currentPrice: 0,
       sector: 'Technology'
     });
+    setError('');
     onClose();
   };
 
@@ -124,9 +135,13 @@ export const AddStockModal: React.FC<AddStockModalProps> = ({ isOpen, onClose, o
                 <option value="Energy">Energy</option>
                 <option value="Industrial">Industrial</option>
                 <option value="Crypto">Crypto</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Real Estate">Real Estate</option>
               </select>
             </div>
           </div>
+          
+          {error && <p className="text-xs text-rose-400">{error}</p>}
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-400 uppercase">Company Name</label>

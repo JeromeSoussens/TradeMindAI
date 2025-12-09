@@ -1,3 +1,4 @@
+
 export type AdviceType = 'BUY' | 'SELL' | 'HOLD' | 'ANALYZING' | 'UNKNOWN';
 
 export interface StockAdvice {
@@ -17,6 +18,15 @@ export interface StockPosition {
   previousClose: number; // Used to calc daily change
   sector: string;
   advice: StockAdvice;
+}
+
+export interface Transaction {
+  id: string;
+  stockId: string;
+  type: 'BUY' | 'SELL';
+  quantity: number;
+  price: number;
+  date: number;
 }
 
 export interface MarketTrend {

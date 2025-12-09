@@ -1,5 +1,5 @@
 
-import { StockPosition } from '../types';
+import { StockPosition, Transaction } from '../types';
 
 const API_URL = 'http://localhost:3001/api';
 const LOCAL_STORAGE_KEY = 'trademind_stocks_fallback';
@@ -34,6 +34,53 @@ const localStore = {
     const stocks = localStore.getStocks(userId);
     const filtered = stocks.filter(s => s.id !== stockId);
     localStore.saveStocks(userId, filtered);
+  },
+  
+  // Transaction Fallbacks
+  getTransactions: (stockId: string): Transaction[] => {
+    try {
+      const data = localStorage.getItem(`${LOCAL_STORAGE_KEY}_tx_${stockId}`);
+      return data ? JSON.parse(data) : [];
+    } catch (e) { return []; }
+  },
+  saveTransactions: (stockId: string, txs: Transaction[]) => {
+    localStorage.setItem(`${LOCAL_STORAGE_KEY}_tx_${stockId}`, JSON.stringify(txs));
+  },
+  addTransaction: (userId: string, stockId: string, type: 'BUY' | 'SELL', quantity: number, price: number) => {
+    const stocks = localStore.getStocks(userId);
+    const stockIndex = stocks.findIndex(s => s.id === stockId);
+    if (stockIndex === -1) return null;
+
+    const stock = stocks[stockIndex];
+
+    // Update Stock Stats Logic (Mirrors Backend)
+    if (type === 'BUY') {
+      const totalCost = (stock.quantity * stock.buyPrice) + (quantity * price);
+      const totalQty = stock.quantity + quantity;
+      stock.buyPrice = totalQty > 0 ? totalCost / totalQty : 0;
+      stock.quantity = totalQty;
+    } else {
+      stock.quantity = Math.max(0, stock.quantity - quantity);
+    }
+    
+    // Save updated stock
+    stocks[stockIndex] = stock;
+    localStore.saveStocks(userId, stocks);
+
+    // Create and save transaction
+    const txs = localStore.getTransactions(stockId);
+    const newTx: Transaction = {
+      id: generateId(),
+      stockId,
+      type,
+      quantity,
+      price,
+      date: Date.now()
+    };
+    txs.unshift(newTx);
+    localStore.saveTransactions(stockId, txs);
+
+    return { transaction: newTx, stock };
   }
 };
 
@@ -91,11 +138,6 @@ export const storageService = {
   },
 
   updateStock: async (stockId: string, updates: Partial<StockPosition>): Promise<void> => {
-    // Note: We need userId for local fallback. In a real app we might store userId in a context service wrapper.
-    // For this fix, we assume we might fail silently locally if we don't have the userId context here, 
-    // OR we iterate all keys (messy). 
-    // Ideally, pass userId to updateStock. For now, we attempt API, fail is just log if we can't find local.
-    
     try {
       const response = await fetch(`${API_URL}/stocks/${stockId}`, {
         method: 'PUT',
@@ -104,9 +146,8 @@ export const storageService = {
       });
       if (!response.ok) throw new Error('API Error');
     } catch (error) {
-      console.warn('Backend unavailable (updateStock). Local update requires User ID (not provided in this signature).');
-      // If we really needed local fallback for update, we'd need to change the function signature or store current User ID in this service.
-      // For now, let's try to find the stock in any local key for fallback (simplified)
+      console.warn('Backend unavailable (updateStock). Local update not fully supported without ID context.');
+      // Attempt generic fallback
       const key = Object.keys(localStorage).find(k => k.startsWith(LOCAL_STORAGE_KEY) && localStorage.getItem(k)?.includes(stockId));
       if (key) {
         const userId = key.replace(`${LOCAL_STORAGE_KEY}_`, '');
@@ -128,6 +169,38 @@ export const storageService = {
         const userId = key.replace(`${LOCAL_STORAGE_KEY}_`, '');
         localStore.deleteStock(userId, stockId);
       }
+    }
+  },
+
+  /**
+   * Transaction Methods
+   */
+  getTransactions: async (stockId: string): Promise<Transaction[]> => {
+    try {
+      const response = await fetch(`${API_URL}/stocks/${stockId}/transactions`);
+      if (!response.ok) throw new Error('API Error');
+      return await response.json();
+    } catch (error) {
+      console.warn('Backend unavailable (getTransactions), using local fallback.');
+      return localStore.getTransactions(stockId);
+    }
+  },
+
+  addTransaction: async (stockId: string, type: 'BUY' | 'SELL', quantity: number, price: number, userId?: string): Promise<{ transaction: Transaction, stock: StockPosition } | null> => {
+    try {
+      const response = await fetch(`${API_URL}/stocks/${stockId}/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, quantity, price })
+      });
+      if (!response.ok) throw new Error('API Error');
+      return await response.json();
+    } catch (error) {
+      console.warn('Backend unavailable (addTransaction), using local fallback.');
+      if (userId) {
+        return localStore.addTransaction(userId, stockId, type, quantity, price);
+      }
+      return null;
     }
   }
 };

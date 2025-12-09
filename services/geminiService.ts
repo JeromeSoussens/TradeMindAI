@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { StockAdvice } from '../types';
 
@@ -8,47 +9,6 @@ const getAiClient = () => {
     return null;
   }
   return new GoogleGenAI({ apiKey });
-};
-
-export const lookupStockSymbol = async (symbol: string): Promise<{ name: string; price: number; sector: string } | null> => {
-  const ai = getAiClient();
-  if (!ai) return null;
-
-  const prompt = `
-    Identify the company for stock ticker symbol: ${symbol}.
-    Return a JSON object with:
-    1. The full company "name".
-    2. An estimated current "price" (number) in USD based on recent market data.
-    3. The "sector" this company belongs to (e.g., Technology, Finance, Healthcare, Automotive, Consumer, Energy, Industrial, Crypto).
-    
-    If the symbol is invalid or unknown, return null.
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING },
-            price: { type: Type.NUMBER },
-            sector: { type: Type.STRING }
-          },
-          required: ['name', 'price', 'sector']
-        }
-      }
-    });
-
-    const text = response.text;
-    if (!text) return null;
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Symbol lookup failed:", error);
-    return null;
-  }
 };
 
 export const analyzeStockPosition = async (

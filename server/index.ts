@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import { db } from './db';
@@ -136,6 +137,62 @@ app.delete('/api/stocks/:id', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error in DELETE /api/stocks/:id:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get Transactions
+app.get('/api/stocks/:id/transactions', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const transactions = await db.getTransactionsByStockId(id);
+    const formatted = transactions.map(t => ({
+      id: t.id,
+      stockId: t.stock_id,
+      type: t.type,
+      quantity: t.quantity,
+      price: t.price,
+      date: t.date
+    }));
+    res.json(formatted);
+  } catch (err) {
+    console.error('Error in GET /api/stocks/:id/transactions:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Add Transaction (Buy/Sell)
+app.post('/api/stocks/:id/transactions', async (req, res) => {
+  const { id } = req.params;
+  const { type, quantity, price } = req.body;
+
+  try {
+    const { transaction, stock } = await db.addTransaction(id, type, quantity, price);
+    
+    // Return both the new transaction and the updated stock stats
+    res.json({
+      transaction: {
+        id: transaction.id,
+        stockId: transaction.stock_id,
+        type: transaction.type,
+        quantity: transaction.quantity,
+        price: transaction.price,
+        date: transaction.date
+      },
+      stock: {
+        id: stock.id,
+        symbol: stock.symbol,
+        name: stock.name,
+        buyPrice: stock.buy_price,
+        quantity: stock.quantity,
+        currentPrice: stock.current_price,
+        previousClose: stock.current_price,
+        sector: stock.sector,
+        advice: stock.advice
+      }
+    });
+  } catch (err) {
+    console.error('Error in POST /api/stocks/:id/transactions:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
